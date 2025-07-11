@@ -12,6 +12,11 @@ import (
 )
 
 func GetHtml(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Expected get request", http.StatusBadRequest)
+		return
+	}
+
 	html, err := os.ReadFile("index.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -20,10 +25,18 @@ func GetHtml(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(html))
+	_, err = w.Write([]byte(html))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func Upload(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Expected post request", http.StatusBadRequest)
+		return
+	}
+
 	r.ParseMultipartForm(10)
 	file, handler, err := r.FormFile("myFile")
 	if err != nil {
@@ -67,5 +80,8 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/plain charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(str))
+	_, err = w.Write([]byte(str))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
